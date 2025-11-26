@@ -1,0 +1,65 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  PLAYER
+  CLUB
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  role      Role
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  playerProfile PlayerProfile?
+  clubProfile   ClubProfile?
+  sentMessages     Message[] @relation("SentMessages")
+  receivedMessages Message[] @relation("ReceivedMessages")
+}
+
+model PlayerProfile {
+  id        Int     @id @default(autoincrement())
+  userId    Int     @unique
+  user      User    @relation(fields: [userId], references: [id])
+  firstName String
+  lastName  String
+  position  String?
+  age       Int?
+  location  String? // Simplified for now, could be lat/long
+  latitude  Float?
+  longitude Float?
+  bio       String?
+}
+
+model ClubProfile {
+  id        Int     @id @default(autoincrement())
+  userId    Int     @unique
+  user      User    @relation(fields: [userId], references: [id])
+  clubName  String
+  location  String?
+  latitude  Float?
+  longitude Float?
+  description String?
+  level     String?
+}
+
+model Message {
+  id        Int      @id @default(autoincrement())
+  content   String
+  senderId  Int
+  receiverId Int
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  
+  sender    User     @relation("SentMessages", fields: [senderId], references: [id])
+  receiver  User     @relation("ReceivedMessages", fields: [receiverId], references: [id])
+}
