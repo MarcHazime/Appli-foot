@@ -29,7 +29,7 @@ const MapSearch = () => {
     useEffect(() => {
         const fetchUsers = async () => {
             try {
-                const res = await axios.get('http://localhost:3000/api/search', {
+                const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/search`, {
                     headers: { Authorization: `Bearer ${user.token}` }
                 });
                 setUsers(res.data);

@@ -20,7 +20,7 @@ const Messages = () => {
 
     const fetchMessages = async () => {
         try {
-            const res = await axios.get('http://localhost:3000/api/messages/all', {
+            const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/messages/all`, {
                 headers: { Authorization: `Bearer ${user.token} ` }
             });
 
@@ -73,7 +73,7 @@ const Messages = () => {
         // Mark as read
         if (conv.unreadCount > 0) {
             try {
-                await axios.put('http://localhost:3000/api/messages/read', {}, {
+                await axios.put(`${import.meta.env.VITE_API_URL}/api/messages/read`, {}, {
                     headers: { Authorization: `Bearer ${user.token} ` }
                 });
                 fetchMessages();
@@ -88,7 +88,7 @@ const Messages = () => {
         if (!replyContent.trim()) return;
 
         try {
-            await axios.post('http://localhost:3000/api/messages', {
+            await axios.post(`${import.meta.env.VITE_API_URL}/api/messages`, {
                 receiverId: selectedConversation.user.id,
                 content: replyContent
             }, {

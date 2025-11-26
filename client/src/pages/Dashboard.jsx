@@ -14,7 +14,7 @@ const Dashboard = () => {
     const handleSearch = async (e) => {
         e.preventDefault();
         try {
-            const res = await axios.get(`http://localhost:3000/api/search?q=${searchTerm}`, {
+            const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/search?q=${searchTerm}`, {
                 headers: { Authorization: `Bearer ${user.token}` }
             });
             setResults(res.data);

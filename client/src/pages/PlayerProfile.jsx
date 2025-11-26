@@ -20,7 +20,7 @@ const PlayerProfile = () => {
     useEffect(() => {
         const fetchProfile = async () => {
             try {
-                const res = await axios.get('http://localhost:3000/api/user/profile', {
+                const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/user/profile`, {
                     headers: { Authorization: `Bearer ${user.token}` }
                 });
                 setProfile(res.data);
@@ -38,7 +38,7 @@ const PlayerProfile = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.put('http://localhost:3000/api/user/profile', profile, {
+            await axios.put(`${import.meta.env.VITE_API_URL}/api/user/profile`, profile, {
                 headers: { Authorization: `Bearer ${user.token}` }
             });
             showToast('Profile updated successfully!', 'success');

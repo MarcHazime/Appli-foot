@@ -14,7 +14,7 @@ const Navbar = () => {
     const fetchUnread = async () => {
       if (user) {
         try {
-          const res = await axios.get('http://localhost:3000/api/messages/unread', {
+          const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/messages/unread`, {
             headers: { Authorization: `Bearer ${user.token}` }
           });
           setUnreadCount(res.data.count);
