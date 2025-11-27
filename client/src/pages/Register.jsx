@@ -30,7 +30,7 @@ const Register = () => {
         try {
             const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/register`, formData);
             login(res.data.token, res.data.userId, res.data.role);
-            showToast('Registration successful!', 'success');
+            showToast(`Registration successful! Role: ${res.data.role}`, 'success');
             navigate('/dashboard');
         } catch (err) {
             console.error(err);

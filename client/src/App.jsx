@@ -46,7 +46,7 @@ function App() {
                             <Route path="/map" element={<MapSearch />} />
                             <Route path="/messages" element={<Messages />} />
                             <Route path="/user/:id" element={<PublicProfile />} />
-                            <Route path="/profile" element={user?.role === 'PLAYER' ? <PlayerProfile /> : <ClubProfile />} />
+                            <Route path="/profile" element={user?.role?.toUpperCase() === 'PLAYER' ? <PlayerProfile /> : <ClubProfile />} />
                         </Route>
 
                         <Route path="/" element={<Navigate to="/login" />} />

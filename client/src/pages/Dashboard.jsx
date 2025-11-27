@@ -17,7 +17,12 @@ const Dashboard = () => {
             const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/search?q=${searchTerm}`, {
                 headers: { Authorization: `Bearer ${user.token}` }
             });
-            setResults(res.data);
+            if (Array.isArray(res.data)) {
+                setResults(res.data);
+            } else {
+                console.error("API returned non-array:", res.data);
+                setResults([]);
+            }
         } catch (err) {
             console.error(err);
         }
