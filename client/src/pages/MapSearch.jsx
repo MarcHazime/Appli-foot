@@ -32,7 +32,13 @@ const MapSearch = () => {
                 const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/search`, {
                     headers: { Authorization: `Bearer ${user.token}` }
                 });
-                setUsers(res.data);
+                console.log(res.data);
+                if (Array.isArray(res.data)) {
+                    setUsers(res.data);
+                } else {
+                    console.error("API returned non-array:", res.data);
+                    setUsers([]);
+                }
             } catch (err) {
                 console.error(err);
             }

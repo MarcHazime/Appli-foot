@@ -28,25 +28,29 @@ const Messages = () => {
             const grouped = {};
             const currentUserId = Number(user.userId);
 
-            res.data.forEach(msg => {
-                const isSender = msg.senderId === currentUserId;
-                const otherId = isSender ? msg.receiverId : msg.senderId;
-                const otherUser = isSender ? msg.receiver : msg.sender;
+            if (Array.isArray(res.data)) {
+                res.data.forEach(msg => {
+                    const isSender = msg.senderId === currentUserId;
+                    const otherId = isSender ? msg.receiverId : msg.senderId;
+                    const otherUser = isSender ? msg.receiver : msg.sender;
 
-                if (!grouped[otherId]) {
-                    grouped[otherId] = {
-                        user: otherUser,
-                        messages: [],
-                        lastMessage: null,
-                        unreadCount: 0
-                    };
-                }
-                grouped[otherId].messages.push(msg);
-                grouped[otherId].lastMessage = msg;
-                if (msg.receiverId === currentUserId && !msg.isRead) {
-                    grouped[otherId].unreadCount++;
-                }
-            });
+                    if (!grouped[otherId]) {
+                        grouped[otherId] = {
+                            user: otherUser,
+                            messages: [],
+                            lastMessage: null,
+                            unreadCount: 0
+                        };
+                    }
+                    grouped[otherId].messages.push(msg);
+                    grouped[otherId].lastMessage = msg;
+                    if (msg.receiverId === currentUserId && !msg.isRead) {
+                        grouped[otherId].unreadCount++;
+                    }
+                });
+            } else {
+                console.error("API returned non-array:", res.data);
+            }
 
             // Convert to array and sort by last message date
             const sortedConversations = Object.values(grouped).sort((a, b) =>
