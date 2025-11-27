@@ -52,6 +52,13 @@ const MapSearch = () => {
         iconAnchor: [15, 15]
     });
 
+    const ClubIcon = L.divIcon({
+        className: 'custom-club-icon',
+        html: '<div style="font-size: 30px;">⚽</div>',
+        iconSize: [30, 30],
+        iconAnchor: [15, 15]
+    });
+
     return (
         <div className="map-container">
             <h2>{user.role === 'CLUB' ? t.map.findPlayers : t.map.findClubs}</h2>
@@ -68,7 +75,7 @@ const MapSearch = () => {
                         <Marker
                             key={u.id}
                             position={[profile.latitude, profile.longitude]}
-                            icon={PlayerIcon}
+                            icon={u.role === 'PLAYER' ? PlayerIcon : ClubIcon}
                         >
                             <Popup>
                                 <strong>{profile.firstName ? `${profile.firstName} ${profile.lastName}` : profile.clubName}</strong><br />
