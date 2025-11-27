@@ -49,9 +49,9 @@ const Dashboard = () => {
                 {results.length === 0 && <p>{t.dashboard.noResults}</p>}
                 {results.map((u) => (
                     <div key={u.id} className="card">
-                        <h3>{u?.role === 'PLAYER' ? `${u?.playerProfile?.firstName} ${u?.playerProfile?.lastName}` : u?.clubProfile?.clubName}</h3>
+                        <h3>{u.role === 'PLAYER' ? `${u.playerProfile?.firstName} ${u.playerProfile?.lastName}` : u.clubProfile?.clubName}</h3>
                         <p>{u.role}</p>
-                        <p>{u.role === 'PLAYER' ? u?.playerProfile?.location : u?.clubProfile?.location}</p>
+                        <p>{u.role === 'PLAYER' ? u.playerProfile?.location : u.clubProfile?.location}</p>
                         <Link to={`/user/${u.id}`} className="view-profile-btn">{t.dashboard.viewProfile}</Link>
                     </div>
                 ))}

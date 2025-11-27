@@ -7,21 +7,28 @@ exports.search = async (req, res) => {
         const { location } = req.query;
 
         let results;
+        let results;
         if (role === 'PLAYER') {
             // Player searching for Clubs
-            results = await prisma.clubProfile.findMany({
+            results = await prisma.user.findMany({
                 where: {
-                    ...(location && { location: { contains: location, mode: 'insensitive' } })
+                    role: 'CLUB',
+                    clubProfile: {
+                        ...(location && { location: { contains: location, mode: 'insensitive' } })
+                    }
                 },
-                include: { user: { select: { email: true } } }
+                include: { clubProfile: true }
             });
         } else if (role === 'CLUB') {
             // Club searching for Players
-            results = await prisma.playerProfile.findMany({
+            results = await prisma.user.findMany({
                 where: {
-                    ...(location && { location: { contains: location, mode: 'insensitive' } })
+                    role: 'PLAYER',
+                    playerProfile: {
+                        ...(location && { location: { contains: location, mode: 'insensitive' } })
+                    }
                 },
-                include: { user: { select: { email: true } } }
+                include: { playerProfile: true }
             });
         }
 
