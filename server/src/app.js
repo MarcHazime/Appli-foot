@@ -13,7 +13,14 @@ const userRoutes = require('./routes/user.routes');
 const searchRoutes = require('./routes/search.routes');
 const messageRoutes = require('./routes/message.routes');
 
-app.use(cors());
+app.use(cors({
+    origin: [
+        'http://localhost:3000',
+        'http://localhost:5173',
+        'https://appli-foot-production.up.railway.app'
+    ],
+    credentials: true
+}));
 app.use(express.json());
 
 app.use('/api/auth', authRoutes);

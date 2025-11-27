@@ -7,7 +7,6 @@ exports.search = async (req, res) => {
         const { location } = req.query;
 
         let results;
-        let results;
         if (role === 'PLAYER') {
             // Player searching for Clubs
             results = await prisma.user.findMany({
