@@ -45,6 +45,13 @@ const MapSearch = () => {
         fetchUsers();
     }, [user.token]);
 
+    const PlayerIcon = L.divIcon({
+        className: 'custom-player-icon',
+        html: '<div style="font-size: 30px;">🏃</div>',
+        iconSize: [30, 30],
+        iconAnchor: [15, 15]
+    });
+
     return (
         <div className="map-container">
             <h2>{user.role === 'CLUB' ? t.map.findPlayers : t.map.findClubs}</h2>
@@ -53,18 +60,25 @@ const MapSearch = () => {
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                 />
-                {users.map((u) => (
-                    u.latitude && u.longitude && (
-                        <Marker key={u.id} position={[u.latitude, u.longitude]}>
+                {users.map((u) => {
+                    const profile = u.playerProfile || u.clubProfile;
+                    if (!profile || !profile.latitude || !profile.longitude) return null;
+
+                    return (
+                        <Marker
+                            key={u.id}
+                            position={[profile.latitude, profile.longitude]}
+                            icon={PlayerIcon}
+                        >
                             <Popup>
-                                <strong>{u.firstName ? `${u.firstName} ${u.lastName}` : u.clubName}</strong><br />
-                                {u.location}<br />
-                                {u.position || u.level}<br />
-                                <Link to={`/user/${u.userId || u.id}`}>{t.map.popupViewProfile}</Link>
+                                <strong>{profile.firstName ? `${profile.firstName} ${profile.lastName}` : profile.clubName}</strong><br />
+                                {profile.location}<br />
+                                {profile.position || profile.level}<br />
+                                <Link to={`/user/${u.id}`}>{t.map.popupViewProfile}</Link>
                             </Popup>
                         </Marker>
-                    )
-                ))}
+                    );
+                })}
             </MapContainer>
         </div>
     );
