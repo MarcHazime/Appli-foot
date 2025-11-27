@@ -33,6 +33,8 @@ exports.register = async (req, res) => {
             }
         }
 
+        console.log('Register Request Body:', req.body);
+
         // Create user
         const user = await prisma.user.create({
             data: {
@@ -59,6 +61,8 @@ exports.register = async (req, res) => {
                 })
             }
         });
+
+        console.log('Created User:', user);
 
         const token = jwt.sign({ userId: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
