@@ -4,7 +4,7 @@ const prisma = new PrismaClient();
 exports.search = async (req, res) => {
     try {
         const { role } = req.userData;
-        const { location } = req.query;
+        const { q } = req.query;
 
         let results;
         if (role === 'PLAYER') {
@@ -13,7 +13,12 @@ exports.search = async (req, res) => {
                 where: {
                     role: 'CLUB',
                     clubProfile: {
-                        ...(location && { location: { contains: location, mode: 'insensitive' } })
+                        ...(q && {
+                            OR: [
+                                { clubName: { contains: q, mode: 'insensitive' } },
+                                { location: { contains: q, mode: 'insensitive' } }
+                            ]
+                        })
                     }
                 },
                 include: { clubProfile: true }
@@ -24,7 +29,13 @@ exports.search = async (req, res) => {
                 where: {
                     role: 'PLAYER',
                     playerProfile: {
-                        ...(location && { location: { contains: location, mode: 'insensitive' } })
+                        ...(q && {
+                            OR: [
+                                { firstName: { contains: q, mode: 'insensitive' } },
+                                { lastName: { contains: q, mode: 'insensitive' } },
+                                { location: { contains: q, mode: 'insensitive' } }
+                            ]
+                        })
                     }
                 },
                 include: { playerProfile: true }
