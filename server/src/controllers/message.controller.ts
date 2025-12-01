@@ -1,10 +1,15 @@
-const { PrismaClient } = require('@prisma/client');
+import { Request, Response } from 'express';
+import { PrismaClient } from '@prisma/client';
+
 const prisma = new PrismaClient();
 
-exports.sendMessage = async (req, res) => {
+export const sendMessage = async (req: Request, res: Response) => {
     try {
+        if (!req.user) {
+            return res.status(401).json({ message: 'Unauthorized' });
+        }
         const { receiverId, content } = req.body;
-        const senderId = req.userData.userId;
+        const senderId = parseInt(req.user.userId);
 
         const message = await prisma.message.create({
             data: {
@@ -21,9 +26,12 @@ exports.sendMessage = async (req, res) => {
     }
 };
 
-exports.getInbox = async (req, res) => {
+export const getInbox = async (req: Request, res: Response) => {
     try {
-        const userId = req.userData.userId;
+        if (!req.user) {
+            return res.status(401).json({ message: 'Unauthorized' });
+        }
+        const userId = parseInt(req.user.userId);
         const messages = await prisma.message.findMany({
             where: { receiverId: userId },
             include: {
@@ -43,9 +51,12 @@ exports.getInbox = async (req, res) => {
     }
 };
 
-exports.getOutbox = async (req, res) => {
+export const getOutbox = async (req: Request, res: Response) => {
     try {
-        const userId = req.userData.userId;
+        if (!req.user) {
+            return res.status(401).json({ message: 'Unauthorized' });
+        }
+        const userId = parseInt(req.user.userId);
         const messages = await prisma.message.findMany({
             where: { senderId: userId },
             include: {
@@ -65,9 +76,12 @@ exports.getOutbox = async (req, res) => {
     }
 };
 
-exports.getUnreadCount = async (req, res) => {
+export const getUnreadCount = async (req: Request, res: Response) => {
     try {
-        const userId = req.userData.userId;
+        if (!req.user) {
+            return res.status(401).json({ message: 'Unauthorized' });
+        }
+        const userId = parseInt(req.user.userId);
         const count = await prisma.message.count({
             where: {
                 receiverId: userId,
@@ -81,9 +95,12 @@ exports.getUnreadCount = async (req, res) => {
     }
 };
 
-exports.markAsRead = async (req, res) => {
+export const markAsRead = async (req: Request, res: Response) => {
     try {
-        const userId = req.userData.userId;
+        if (!req.user) {
+            return res.status(401).json({ message: 'Unauthorized' });
+        }
+        const userId = parseInt(req.user.userId);
         await prisma.message.updateMany({
             where: {
                 receiverId: userId,
@@ -98,9 +115,12 @@ exports.markAsRead = async (req, res) => {
     }
 };
 
-exports.getAllMessages = async (req, res) => {
+export const getAllMessages = async (req: Request, res: Response) => {
     try {
-        const userId = req.userData.userId;
+        if (!req.user) {
+            return res.status(401).json({ message: 'Unauthorized' });
+        }
+        const userId = parseInt(req.user.userId);
         const messages = await prisma.message.findMany({
             where: {
                 OR: [
@@ -130,4 +150,3 @@ exports.getAllMessages = async (req, res) => {
         res.status(500).json({ message: 'Server error' });
     }
 };
-

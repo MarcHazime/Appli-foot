@@ -1,17 +1,16 @@
-const express = require('express');
-const http = require('http');
-const cors = require('cors');
-const dotenv = require('dotenv');
+import express, { Request, Response } from 'express';
+import http from 'http';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import authRoutes from './routes/auth.routes';
+import userRoutes from './routes/user.routes';
+import searchRoutes from './routes/search.routes';
+import messageRoutes from './routes/message.routes';
 
 dotenv.config();
 
 const app = express();
 const server = http.createServer(app);
-
-const authRoutes = require('./routes/auth.routes');
-const userRoutes = require('./routes/user.routes');
-const searchRoutes = require('./routes/search.routes');
-const messageRoutes = require('./routes/message.routes');
 
 app.use(cors({
     origin: [
@@ -28,7 +27,7 @@ app.use('/api/user', userRoutes);
 app.use('/api/search', searchRoutes);
 app.use('/api/messages', messageRoutes);
 
-app.get('/', (req, res) => {
+app.get('/', (req: Request, res: Response) => {
     res.send('Football Matchmaking API');
 });
 

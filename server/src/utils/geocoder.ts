@@ -1,6 +1,11 @@
-const axios = require('axios');
+import axios from 'axios';
 
-exports.geocodeCity = async (city) => {
+interface Coordinates {
+    latitude: number;
+    longitude: number;
+}
+
+export const geocodeCity = async (city: string): Promise<Coordinates | null> => {
     if (!city) return null;
     try {
         const response = await axios.get('https://nominatim.openstreetmap.org/search', {
@@ -22,7 +27,7 @@ exports.geocodeCity = async (city) => {
             };
         }
         return null;
-    } catch (error) {
+    } catch (error: any) {
         console.error('Geocoding error:', error.message);
         return null;
     }

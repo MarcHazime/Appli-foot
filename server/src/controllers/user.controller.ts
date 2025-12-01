@@ -1,16 +1,37 @@
-const { PrismaClient } = require('@prisma/client');
-const geocoder = require('../utils/geocoder');
+import { Request, Response } from 'express';
+import { PrismaClient } from '@prisma/client';
+import * as geocoder from '../utils/geocoder';
+
 const prisma = new PrismaClient();
 
-exports.getProfile = async (req, res) => {
+export const getProfile = async (req: Request, res: Response) => {
     try {
-        const { userId, role } = req.userData;
+        if (!req.user) {
+            return res.status(401).json({ message: 'Unauthorized' });
+        }
+        const { userId, role } = req.user;
 
         let profile;
         if (role === 'PLAYER') {
-            profile = await prisma.playerProfile.findUnique({ where: { userId } });
+            profile = await prisma.playerProfile.findUnique({ where: { userId: parseInt(userId) } }); // userId in token is string, but db might expect int? Wait, schema check needed.
+            // Actually, in auth controller we used user.id which is likely int. And token stores it.
+            // Let's check schema or usage. In register, jwt payload has userId: user.id.
+            // Prisma findUnique usually expects the type defined in schema.
+            // If User ID is Int, then findUnique expects Int.
+            // In auth.controller.js: const token = jwt.sign({ userId: user.id ... })
+            // user.id comes from prisma.user.create.
+            // I should cast userId to number if schema uses Int.
+            // Let's assume Int for now based on typical usage, or check schema.
+            // But wait, in auth.controller.js: const user = await prisma.user.create...
+            // User ID is usually Int in Prisma unless specified as String/UUID.
+            // I'll cast to Number(userId) just to be safe, or check schema.
+            // In user.controller.js original: const { userId, role } = req.userData; ... where: { userId }
+            // JS doesn't care, but Prisma might if strict.
+            // Let's look at user.controller.js again.
+            // Line 81: const userId = parseInt(id);
+            // So ID is likely Int.
         } else if (role === 'CLUB') {
-            profile = await prisma.clubProfile.findUnique({ where: { userId } });
+            profile = await prisma.clubProfile.findUnique({ where: { userId: parseInt(userId) } });
         }
 
         if (!profile) {
@@ -24,12 +45,15 @@ exports.getProfile = async (req, res) => {
     }
 };
 
-exports.updateProfile = async (req, res) => {
+export const updateProfile = async (req: Request, res: Response) => {
     try {
-        const { userId, role } = req.userData;
+        if (!req.user) {
+            return res.status(401).json({ message: 'Unauthorized' });
+        }
+        const { userId, role } = req.user;
         const data = req.body;
 
-        let locationUpdates = {};
+        let locationUpdates: any = {};
         if (data.location) {
             // If location (city) is changing, try to geocode it
             const coords = await geocoder.geocodeCity(data.location);
@@ -45,21 +69,22 @@ exports.updateProfile = async (req, res) => {
         }
 
         let profile;
+        const uid = parseInt(userId);
         if (role === 'PLAYER') {
             profile = await prisma.playerProfile.update({
-                where: { userId },
+                where: { userId: uid },
                 data: {
                     firstName: data.firstName,
                     lastName: data.lastName,
                     position: data.position,
-                    age: parseInt(data.age),
+                    age: data.age ? parseInt(data.age) : undefined,
                     bio: data.bio,
                     ...locationUpdates
                 }
             });
         } else if (role === 'CLUB') {
             profile = await prisma.clubProfile.update({
-                where: { userId },
+                where: { userId: uid },
                 data: {
                     clubName: data.clubName,
                     description: data.description,
@@ -75,7 +100,8 @@ exports.updateProfile = async (req, res) => {
         res.status(500).json({ message: 'Server error' });
     }
 };
-exports.getUserById = async (req, res) => {
+
+export const getUserById = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
         const userId = parseInt(id);

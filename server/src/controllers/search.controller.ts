@@ -1,10 +1,15 @@
-const { PrismaClient } = require('@prisma/client');
+import { Request, Response } from 'express';
+import { PrismaClient } from '@prisma/client';
+
 const prisma = new PrismaClient();
 
-exports.search = async (req, res) => {
+export const search = async (req: Request, res: Response) => {
     try {
-        const { role } = req.userData;
-        const { q } = req.query;
+        if (!req.user) {
+            return res.status(401).json({ message: 'Unauthorized' });
+        }
+        const { role } = req.user;
+        const q = req.query.q as string;
 
         let results;
         if (role === 'PLAYER') {

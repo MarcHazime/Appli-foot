@@ -1,13 +1,14 @@
-const { PrismaClient } = require('@prisma/client');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const geocoder = require('../utils/geocoder');
+import { Request, Response } from 'express';
+import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import * as geocoder from '../utils/geocoder';
 
 const prisma = new PrismaClient();
 
-exports.register = async (req, res) => {
+export const register = async (req: Request, res: Response) => {
     try {
-        const { email, password, role, firstName, lastName, clubName } = req.body;
+        const { email, password, role, firstName, lastName, clubName, city } = req.body;
 
         // Check if user exists
         const existingUser = await prisma.user.findUnique({ where: { email } });
@@ -19,17 +20,17 @@ exports.register = async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         // Geocode city
-        let locationData = {};
-        if (req.body.city) {
-            const coords = await geocoder.geocodeCity(req.body.city);
+        let locationData: any = {};
+        if (city) {
+            const coords = await geocoder.geocodeCity(city);
             if (coords) {
                 locationData = {
-                    location: req.body.city,
+                    location: city,
                     latitude: coords.latitude,
                     longitude: coords.longitude
                 };
             } else {
-                locationData = { location: req.body.city };
+                locationData = { location: city };
             }
         }
 
@@ -64,7 +65,7 @@ exports.register = async (req, res) => {
 
         console.log('Created User:', user);
 
-        const token = jwt.sign({ userId: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        const token = jwt.sign({ userId: user.id, role: user.role }, process.env.JWT_SECRET as string, { expiresIn: '1h' });
 
         res.status(201).json({ token, userId: user.id, role: user.role });
     } catch (error) {
@@ -73,7 +74,7 @@ exports.register = async (req, res) => {
     }
 };
 
-exports.login = async (req, res) => {
+export const login = async (req: Request, res: Response) => {
     try {
         const { email, password } = req.body;
 
@@ -87,7 +88,7 @@ exports.login = async (req, res) => {
             return res.status(400).json({ message: 'Invalid credentials' });
         }
 
-        const token = jwt.sign({ userId: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        const token = jwt.sign({ userId: user.id, role: user.role }, process.env.JWT_SECRET as string, { expiresIn: '1h' });
 
         res.json({ token, userId: user.id, role: user.role });
     } catch (error) {
