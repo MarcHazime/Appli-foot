@@ -1,6 +1,12 @@
 import React from 'react';
 
-const Toast = ({ message, type, onClose }) => {
+interface ToastProps {
+    message: string;
+    type: 'success' | 'error' | 'info';
+    onClose: () => void;
+}
+
+const Toast: React.FC<ToastProps> = ({ message, type, onClose }) => {
     return (
         <div className={`toast toast-${type}`}>
             <span>{message}</span>

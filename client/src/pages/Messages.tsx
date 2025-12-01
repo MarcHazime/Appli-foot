@@ -1,35 +1,54 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { AuthContext } from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useToast } from '../context/ToastContext';
 
-const Messages = () => {
-    const { user } = useContext(AuthContext);
+interface Message {
+    id: number;
+    senderId: number;
+    receiverId: number;
+    content: string;
+    isRead: boolean;
+    createdAt: string;
+    sender: any;
+    receiver: any;
+}
+
+interface Conversation {
+    user: any;
+    messages: Message[];
+    lastMessage: Message;
+    unreadCount: number;
+}
+
+const Messages: React.FC = () => {
+    const { user } = useAuth();
     const { t, language } = useLanguage();
     const { showToast } = useToast();
-    const [conversations, setConversations] = useState([]);
-    const [selectedConversation, setSelectedConversation] = useState(null);
-    const [replyContent, setReplyContent] = useState('');
+    const [conversations, setConversations] = useState<Conversation[]>([]);
+    const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
+    const [replyContent, setReplyContent] = useState<string>('');
 
     useEffect(() => {
         fetchMessages();
         const interval = setInterval(fetchMessages, 5000); // Poll for new messages
         return () => clearInterval(interval);
-    }, [user.token]);
+    }, [user]);
 
     const fetchMessages = async () => {
+        if (!user) return;
         try {
             const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/messages/all`, {
                 headers: { Authorization: `Bearer ${user.token} ` }
             });
 
             // Group by other user
-            const grouped = {};
+            const grouped: { [key: number]: Conversation } = {};
             const currentUserId = Number(user.userId);
 
             if (Array.isArray(res.data)) {
-                res.data.forEach(msg => {
+                res.data.forEach((msg: Message) => {
                     const isSender = msg.senderId === currentUserId;
                     const otherId = isSender ? msg.receiverId : msg.senderId;
                     const otherUser = isSender ? msg.receiver : msg.sender;
@@ -38,7 +57,7 @@ const Messages = () => {
                         grouped[otherId] = {
                             user: otherUser,
                             messages: [],
-                            lastMessage: null,
+                            lastMessage: msg, // Placeholder, will be updated
                             unreadCount: 0
                         };
                     }
@@ -54,7 +73,7 @@ const Messages = () => {
 
             // Convert to array and sort by last message date
             const sortedConversations = Object.values(grouped).sort((a, b) =>
-                new Date(b.lastMessage.createdAt) - new Date(a.lastMessage.createdAt)
+                new Date(b.lastMessage.createdAt).getTime() - new Date(a.lastMessage.createdAt).getTime()
             );
 
             setConversations(sortedConversations);
@@ -72,10 +91,10 @@ const Messages = () => {
         }
     };
 
-    const handleSelectConversation = async (conv) => {
+    const handleSelectConversation = async (conv: Conversation) => {
         setSelectedConversation(conv);
         // Mark as read
-        if (conv.unreadCount > 0) {
+        if (conv.unreadCount > 0 && user) {
             try {
                 await axios.put(`${import.meta.env.VITE_API_URL}/api/messages/read`, {}, {
                     headers: { Authorization: `Bearer ${user.token} ` }
@@ -87,9 +106,9 @@ const Messages = () => {
         }
     };
 
-    const handleSendReply = async (e) => {
+    const handleSendReply = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!replyContent.trim()) return;
+        if (!replyContent.trim() || !selectedConversation || !user) return;
 
         try {
             await axios.post(`${import.meta.env.VITE_API_URL}/api/messages`, {
@@ -106,6 +125,8 @@ const Messages = () => {
             showToast('Failed to send reply', 'error');
         }
     };
+
+    if (!user) return null;
 
     return (
         <div className="dashboard-container" style={{ display: 'flex', height: '80vh', gap: '1rem' }}>

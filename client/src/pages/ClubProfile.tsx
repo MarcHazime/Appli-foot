@@ -1,14 +1,21 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { AuthContext } from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useToast } from '../context/ToastContext';
 
-const ClubProfile = () => {
-    const { user } = useContext(AuthContext);
+interface ClubProfileData {
+    clubName: string;
+    location: string;
+    description: string;
+    level: string;
+}
+
+const ClubProfile: React.FC = () => {
+    const { user } = useAuth();
     const { t } = useLanguage();
     const { showToast } = useToast();
-    const [profile, setProfile] = useState({
+    const [profile, setProfile] = useState<ClubProfileData>({
         clubName: '',
         location: '',
         description: '',
@@ -17,6 +24,7 @@ const ClubProfile = () => {
 
     useEffect(() => {
         const fetchProfile = async () => {
+            if (!user) return;
             try {
                 const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/user/profile`, {
                     headers: { Authorization: `Bearer ${user.token}` }
@@ -27,14 +35,15 @@ const ClubProfile = () => {
             }
         };
         fetchProfile();
-    }, [user.token]);
+    }, [user]);
 
-    const handleChange = (e) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setProfile({ ...profile, [e.target.name]: e.target.value });
     };
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!user) return;
         try {
             await axios.put(`${import.meta.env.VITE_API_URL}/api/user/profile`, profile, {
                 headers: { Authorization: `Bearer ${user.token}` }
@@ -45,6 +54,8 @@ const ClubProfile = () => {
             showToast('Update failed. Please try again.', 'error');
         }
     };
+
+    if (!user) return null;
 
     return (
         <div className="profile-container">

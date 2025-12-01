@@ -107,7 +107,9 @@ export const translations = {
         map: {
             title: 'Carte',
             loading: 'Chargement de la carte...',
-            popupViewProfile: 'Voir le profil'
+            popupViewProfile: 'Voir le profil',
+            findPlayers: 'Trouver des Joueurs',
+            findClubs: 'Trouver des Clubs'
         },
         messages: {
             title: 'Messages',
@@ -139,13 +141,6 @@ export const translations = {
             contact: 'Contact',
             typeMessage: 'Écrivez votre message...',
             send: 'Envoyer'
-        },
-        map: {
-            title: 'Carte',
-            findPlayers: 'Trouver des Joueurs',
-            findClubs: 'Trouver des Clubs',
-            loading: 'Chargement de la carte...',
-            popupViewProfile: 'Voir le profil'
         }
     }
 };

@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import axios from 'axios';
-import { AuthContext } from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext';
 import L from 'leaflet';
 
 // Fix for default marker icon
@@ -21,13 +21,35 @@ L.Marker.prototype.options.icon = DefaultIcon;
 
 import { useLanguage } from '../context/LanguageContext';
 
-const MapSearch = () => {
-    const { user } = useContext(AuthContext);
+interface MapUser {
+    id: string;
+    role: string;
+    playerProfile?: {
+        firstName: string;
+        lastName: string;
+        location: string;
+        latitude: number;
+        longitude: number;
+        position?: string;
+        level?: string;
+    };
+    clubProfile?: {
+        clubName: string;
+        location: string;
+        latitude: number;
+        longitude: number;
+        level?: string;
+    };
+}
+
+const MapSearch: React.FC = () => {
+    const { user } = useAuth();
     const { t } = useLanguage();
-    const [users, setUsers] = useState([]);
+    const [users, setUsers] = useState<MapUser[]>([]);
 
     useEffect(() => {
         const fetchUsers = async () => {
+            if (!user) return;
             try {
                 const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/search`, {
                     headers: { Authorization: `Bearer ${user.token}` }
@@ -43,7 +65,7 @@ const MapSearch = () => {
             }
         };
         fetchUsers();
-    }, [user.token]);
+    }, [user]);
 
     const PlayerIcon = L.divIcon({
         className: 'custom-player-icon',
@@ -59,6 +81,8 @@ const MapSearch = () => {
         iconAnchor: [15, 15]
     });
 
+    if (!user) return null;
+
     return (
         <div className="map-container">
             <h2>{user.role === 'CLUB' ? t.map.findPlayers : t.map.findClubs}</h2>
@@ -68,8 +92,18 @@ const MapSearch = () => {
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                 />
                 {users.map((u) => {
-                    const profile = u.playerProfile || u.clubProfile;
+                    const profile = u.role === 'PLAYER' ? u.playerProfile : u.clubProfile;
                     if (!profile || !profile.latitude || !profile.longitude) return null;
+
+                    // Helper to get name safely
+                    const getName = () => {
+                        if (u.role === 'PLAYER' && u.playerProfile) {
+                            return `${u.playerProfile.firstName} ${u.playerProfile.lastName}`;
+                        } else if (u.role === 'CLUB' && u.clubProfile) {
+                            return u.clubProfile.clubName;
+                        }
+                        return '';
+                    };
 
                     return (
                         <Marker
@@ -78,9 +112,9 @@ const MapSearch = () => {
                             icon={u.role === 'PLAYER' ? PlayerIcon : ClubIcon}
                         >
                             <Popup>
-                                <strong>{profile.firstName ? `${profile.firstName} ${profile.lastName}` : profile.clubName}</strong><br />
+                                <strong>{getName()}</strong><br />
                                 {profile.location}<br />
-                                {profile.position || profile.level}<br />
+                                {(profile as any).position || (profile as any).level}<br />
                                 <Link to={`/user/${u.id}`}>{t.map.popupViewProfile}</Link>
                             </Popup>
                         </Marker>

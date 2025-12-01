@@ -1,6 +1,6 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthContext } from './context/AuthContext';
+import { useAuth } from './context/AuthContext';
 import { LanguageProvider } from './context/LanguageContext';
 import Layout from './components/Layout';
 
@@ -14,20 +14,20 @@ import PublicProfile from './pages/PublicProfile';
 import Messages from './pages/Messages';
 import { ToastProvider } from './context/ToastContext';
 
-const PrivateRoute = ({ children }) => {
-    const { user, loading } = useContext(AuthContext);
+const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
+    const { user, loading } = useAuth();
     if (loading) return <div>Loading...</div>;
     return user ? children : <Navigate to="/login" />;
 };
 
-const PublicRoute = ({ children }) => {
-    const { user, loading } = useContext(AuthContext);
+const PublicRoute = ({ children }: { children: React.ReactNode }) => {
+    const { user, loading } = useAuth();
     if (loading) return <div>Loading...</div>;
     return user ? <Navigate to="/dashboard" /> : children;
 };
 
 function App() {
-    const { user } = useContext(AuthContext);
+    const { user } = useAuth();
 
     return (
         <LanguageProvider>

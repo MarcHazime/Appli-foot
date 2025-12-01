@@ -1,12 +1,12 @@
-import React, { useState, useContext } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
-import { AuthContext } from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext';
 
 import { useLanguage } from '../context/LanguageContext';
 import { useToast } from '../context/ToastContext';
 
-const Register = () => {
+const Register: React.FC = () => {
     const [formData, setFormData] = useState({
         email: '',
         password: '',
@@ -16,16 +16,16 @@ const Register = () => {
         clubName: '',
         city: ''
     });
-    const { login } = useContext(AuthContext);
+    const { login } = useAuth();
     const { t } = useLanguage();
     const { showToast } = useToast();
     const navigate = useNavigate();
 
-    const handleChange = (e) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
             const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/register`, formData);

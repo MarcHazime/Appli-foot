@@ -1,18 +1,33 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import { AuthContext } from '../context/AuthContext';
-import { io } from 'socket.io-client';
+import { useAuth } from '../context/AuthContext';
+
 import { useLanguage } from '../context/LanguageContext';
 
-const Dashboard = () => {
-    const { user } = useContext(AuthContext);
-    const { t } = useLanguage();
-    const [searchTerm, setSearchTerm] = useState('');
-    const [results, setResults] = useState([]);
+interface SearchResult {
+    id: string;
+    role: string;
+    playerProfile?: {
+        firstName: string;
+        lastName: string;
+        location: string;
+    };
+    clubProfile?: {
+        clubName: string;
+        location: string;
+    };
+}
 
-    const handleSearch = async (e) => {
+const Dashboard: React.FC = () => {
+    const { user } = useAuth();
+    const { t } = useLanguage();
+    const [searchTerm, setSearchTerm] = useState<string>('');
+    const [results, setResults] = useState<SearchResult[]>([]);
+
+    const handleSearch = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!user) return;
         try {
             const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/search?q=${searchTerm}`, {
                 headers: { Authorization: `Bearer ${user.token}` }
@@ -28,9 +43,11 @@ const Dashboard = () => {
         }
     };
 
+    if (!user) return null;
+
     return (
         <div className="dashboard-container">
-            <h1>{t.dashboard.welcome}, {user.firstName || user.clubName}!</h1>
+            <h1>{t.dashboard.welcome}, {(user as any).firstName || (user as any).clubName}!</h1>
 
             <div className="search-section">
                 <h2>{t.dashboard.searchTitle}</h2>
